@@ -46,18 +46,18 @@ func main() {
 
 func handleRequest() {
 
-	port := ":8000"
+	port := ":3000"
 
 	log.Println("Start Development server on port", port)
 
 	myRouter := mux.NewRouter().StrictSlash(true)
 
 	myRouter.HandleFunc("/", welcome)
-	myRouter.HandleFunc("/api/relics", getRelics).Methods("GET")
-	myRouter.HandleFunc("/api/relic/create", createRelic).Methods("POST")
-	myRouter.HandleFunc("/api/relic/{slug}", getRelic).Methods("GET")
-	myRouter.HandleFunc("/api/relic/{id}/update", updateRelic).Methods("PUT")
-	myRouter.HandleFunc("/api/relic/{id}/delete", deleteRelic).Methods("DELETE")
+	myRouter.HandleFunc("/api/relics", getRelics).Methods("GET", "OPTIONS")
+	myRouter.HandleFunc("/api/relic/create", createRelic).Methods("POST", "OPTIONS")
+	myRouter.HandleFunc("/api/relic/{slug}", getRelic).Methods("GET", "OPTIONS")
+	myRouter.HandleFunc("/api/relic/{id}/update", updateRelic).Methods("PUT", "OPTIONS")
+	myRouter.HandleFunc("/api/relic/{id}/delete", deleteRelic).Methods("DELETE", "OPTIONS")
 
 	log.Fatal(http.ListenAndServe(port, myRouter))
 
@@ -84,6 +84,8 @@ func createRelic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
@@ -109,6 +111,9 @@ func getRelics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
@@ -135,7 +140,9 @@ func getRelic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
@@ -169,6 +176,9 @@ func updateRelic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
@@ -196,6 +206,9 @@ func deleteRelic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
