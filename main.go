@@ -83,9 +83,13 @@ func createRelic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
@@ -110,10 +114,13 @@ func getRelics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
@@ -141,8 +148,12 @@ func getRelic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
@@ -175,10 +186,13 @@ func updateRelic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
@@ -205,10 +219,13 @@ func deleteRelic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
