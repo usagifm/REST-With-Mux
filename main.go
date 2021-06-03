@@ -37,6 +37,15 @@ type Trivia struct {
 	Img      string `json:"img"`
 }
 
+type Article struct {
+	ID          int         `json:"id"`
+	Category    string      `json:"category"`
+	Writer      string      `json:"writer"`
+	Description string      `json:"description"`
+	Img         string      `json:"img"`
+	Date_post   interface{} `json:"date_post"`
+}
+
 type Result struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
@@ -83,6 +92,13 @@ func handleRequest() {
 	myRouter.HandleFunc("/api/candi/{id}", getCandi).Methods("GET", "OPTIONS")
 	myRouter.HandleFunc("/api/candi/{id}/update", updateCandi).Methods("PUT", "OPTIONS")
 	myRouter.HandleFunc("/api/candi/{id}/delete", deleteCandi).Methods("DELETE", "OPTIONS")
+
+	// Article Routes
+	myRouter.HandleFunc("/api/articles", getArticles).Methods("GET", "OPTIONS")
+	myRouter.HandleFunc("/api/article/create", createArticle).Methods("POST", "OPTIONS")
+	myRouter.HandleFunc("/api/article/{category}", getArticleByCategory).Methods("GET", "OPTIONS")
+	myRouter.HandleFunc("/api/article/{id}/update", updateArticle).Methods("PUT", "OPTIONS")
+	myRouter.HandleFunc("/api/article/{id}/delete", deleteArticle).Methods("DELETE", "OPTIONS")
 
 	log.Fatal(http.ListenAndServe(port, myRouter))
 
@@ -413,6 +429,176 @@ func getCandi(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := Result{Code: 200, Data: candi, Message: "Data Received"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+// fungsi untuk article
+func createArticle(w http.ResponseWriter, r *http.Request) {
+	payloads, _ := ioutil.ReadAll(r.Body)
+
+	var article Article
+	json.Unmarshal(payloads, &article)
+
+	db.Create(&article)
+
+	res := Result{Code: 200, Data: article, Message: "Article Data Created"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func getArticles(w http.ResponseWriter, r *http.Request) {
+	articles := []Article{}
+
+	// db.Where("slug = ?", relicSlug).First(&candi)
+
+	// if err := db.Find(&candis).Error; err != nil {
+	// 	http.Error(w, err.Error(), http.StatusNotFound)
+	// 	return
+	// }
+
+	db.Find(&articles)
+
+	res := Result{Code: 200, Data: articles, Message: "Articles Data Received"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func updateArticle(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	articleId := vars["id"]
+
+	log.Println(" ID ", articleId)
+
+	payloads, _ := ioutil.ReadAll(r.Body)
+
+	var articleUpdates Article
+	json.Unmarshal(payloads, &articleUpdates)
+	// db.Where("slug = ?", relicSlug).First(&candi)
+
+	var article Article
+	if err := db.First(&article, articleId).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	db.Model(&article).Update(articleUpdates)
+
+	res := Result{Code: 200, Data: article, Message: "Article Data Updated"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func deleteArticle(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	articleId := vars["id"]
+
+	log.Println(" ID ", articleId)
+
+	var article Article
+	if err := db.First(&article, articleId).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	db.Delete(&article)
+
+	res := Result{Code: 200, Message: "Article Data Deleted"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func getArticleByCategory(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	articleCategory := vars["category"]
+
+	// log.Println(" isi slug ", relicSlug)
+
+	var article []Article
+
+	// db.Where("slug = ?", relicSlug).First(&candi)
+
+	if err := db.Where("category = ?", articleCategory).Find(&article).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	res := Result{Code: 200, Data: article, Message: "Article Category Received"}
 	result, err := json.Marshal(res)
 
 	if err != nil {
