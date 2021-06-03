@@ -16,10 +16,25 @@ var db *gorm.DB
 var err error
 
 type Candi struct {
-	ID     int    `json:"id"`
-	Title  string `json:"title"`
-	Slug   string `json:"slug"`
-	Trivia string `json:"trivia"`
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Lat         float32 `json:"lat"`
+	Long        float32 `json:"long"`
+	Rating      float32 `json:"rating"`
+	Address     string  `json:"address"`
+	City        string  `json:"city"`
+	Tagline     string  `json:"tagline"`
+	Img         string  `json:"img"`
+}
+
+type Trivia struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Slug     string `json:"slug"`
+	Candi_id int    `json:"candi_id"`
+	Trivia   string `json:"trivia"`
+	Img      string `json:"img"`
 }
 
 type Result struct {
@@ -38,7 +53,7 @@ func main() {
 		log.Println("Koneksi Berhasil !")
 	}
 
-	db.AutoMigrate(&Candi{})
+	// db.AutoMigrate(&Candi{})
 
 	handleRequest()
 
@@ -46,18 +61,28 @@ func main() {
 
 func handleRequest() {
 
-	port := ":3000"
+	port := ":5000"
 
 	log.Println("Start Development server on port", port)
 
 	myRouter := mux.NewRouter().StrictSlash(true)
 
 	myRouter.HandleFunc("/", welcome)
-	myRouter.HandleFunc("/api/relics", getRelics).Methods("GET", "OPTIONS")
-	myRouter.HandleFunc("/api/relic/create", createRelic).Methods("POST", "OPTIONS")
-	myRouter.HandleFunc("/api/relic/{slug}", getRelic).Methods("GET", "OPTIONS")
-	myRouter.HandleFunc("/api/relic/{id}/update", updateRelic).Methods("PUT", "OPTIONS")
-	myRouter.HandleFunc("/api/relic/{id}/delete", deleteRelic).Methods("DELETE", "OPTIONS")
+
+	// Trivia Routes
+
+	myRouter.HandleFunc("/api/trivias", getTrivias).Methods("GET", "OPTIONS")
+	myRouter.HandleFunc("/api/trivia/create", createTrivia).Methods("POST", "OPTIONS")
+	myRouter.HandleFunc("/api/trivia/{slug}", getTrivia).Methods("GET", "OPTIONS")
+	myRouter.HandleFunc("/api/trivia/{id}/update", updateTrivia).Methods("PUT", "OPTIONS")
+	myRouter.HandleFunc("/api/trivia/{id}/delete", deleteTrivia).Methods("DELETE", "OPTIONS")
+
+	// Candi Routes
+	myRouter.HandleFunc("/api/candis", getCandis).Methods("GET", "OPTIONS")
+	myRouter.HandleFunc("/api/candi/create", createCandi).Methods("POST", "OPTIONS")
+	myRouter.HandleFunc("/api/candi/{id}", getCandi).Methods("GET", "OPTIONS")
+	myRouter.HandleFunc("/api/candi/{id}/update", updateCandi).Methods("PUT", "OPTIONS")
+	myRouter.HandleFunc("/api/candi/{id}/delete", deleteCandi).Methods("DELETE", "OPTIONS")
 
 	log.Fatal(http.ListenAndServe(port, myRouter))
 
@@ -67,7 +92,178 @@ func welcome(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Welcome to Hexcap REST API")
 }
 
-func createRelic(w http.ResponseWriter, r *http.Request) {
+func createTrivia(w http.ResponseWriter, r *http.Request) {
+	payloads, _ := ioutil.ReadAll(r.Body)
+
+	var trivia Trivia
+	json.Unmarshal(payloads, &trivia)
+
+	db.Create(&trivia)
+
+	res := Result{Code: 200, Data: trivia, Message: "Data Created"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func getTrivias(w http.ResponseWriter, r *http.Request) {
+	trivias := []Trivia{}
+
+	// db.Where("slug = ?", relicSlug).First(&candi)
+
+	// if err := db.Find(&candis).Error; err != nil {
+	// 	http.Error(w, err.Error(), http.StatusNotFound)
+	// 	return
+	// }
+
+	db.Find(&trivias)
+
+	res := Result{Code: 200, Data: trivias, Message: "Data Received"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func getTrivia(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	relicSlug := vars["slug"]
+
+	log.Println(" isi slug ", relicSlug)
+
+	var trivia Trivia
+
+	// db.Where("slug = ?", relicSlug).First(&candi)
+
+	if err := db.Where("slug = ?", relicSlug).First(&trivia).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	res := Result{Code: 200, Data: trivia, Message: "Data Received"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func updateTrivia(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	triviaId := vars["id"]
+
+	log.Println(" ID ", triviaId)
+
+	payloads, _ := ioutil.ReadAll(r.Body)
+
+	var candiUpdates Trivia
+	json.Unmarshal(payloads, &candiUpdates)
+	// db.Where("slug = ?", relicSlug).First(&candi)
+
+	var trivia Trivia
+	if err := db.First(&trivia, triviaId).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	db.Model(&trivia).Update(candiUpdates)
+
+	res := Result{Code: 200, Data: trivia, Message: "Data Updated"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func deleteTrivia(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	triviaId := vars["id"]
+
+	log.Println(" ID ", triviaId)
+
+	var trivia Trivia
+	if err := db.First(&trivia, triviaId).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	db.Delete(&trivia)
+
+	res := Result{Code: 200, Message: "Data Deleted"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+// CANDI FUNCTIONS
+
+func createCandi(w http.ResponseWriter, r *http.Request) {
 	payloads, _ := ioutil.ReadAll(r.Body)
 
 	var candi Candi
@@ -83,6 +279,7 @@ func createRelic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// semua method diperbolehkan masuk
@@ -94,7 +291,7 @@ func createRelic(w http.ResponseWriter, r *http.Request) {
 	w.Write(result)
 }
 
-func getRelics(w http.ResponseWriter, r *http.Request) {
+func getCandis(w http.ResponseWriter, r *http.Request) {
 	candis := []Candi{}
 
 	// db.Where("slug = ?", relicSlug).First(&candi)
@@ -114,6 +311,7 @@ func getRelics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// semua method diperbolehkan masuk
@@ -125,53 +323,20 @@ func getRelics(w http.ResponseWriter, r *http.Request) {
 	w.Write(result)
 }
 
-func getRelic(w http.ResponseWriter, r *http.Request) {
+func updateCandi(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	relicSlug := vars["slug"]
+	candiId := vars["id"]
 
-	log.Println(" isi slug ", relicSlug)
-
-	var candi Candi
-	// db.Where("slug = ?", relicSlug).First(&candi)
-
-	if err := db.Where("slug = ?", relicSlug).First(&candi).Error; err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-
-	res := Result{Code: 200, Data: candi, Message: "Data Received"}
-	result, err := json.Marshal(res)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	// semua method diperbolehkan masuk
-	w.Header().Set("Access-Control-Allow-Methods", "*")
-
-	// semua header diperbolehkan untuk disisipkan
-	w.Header().Set("Access-Control-Allow-Headers", "*")
-	w.WriteHeader(http.StatusOK)
-	w.Write(result)
-}
-
-func updateRelic(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	relicId := vars["id"]
-
-	log.Println(" ID ", relicId)
+	log.Println(" ID ", candiId)
 
 	payloads, _ := ioutil.ReadAll(r.Body)
 
-	var candiUpdates Candi
+	var candiUpdates Trivia
 	json.Unmarshal(payloads, &candiUpdates)
 	// db.Where("slug = ?", relicSlug).First(&candi)
 
 	var candi Candi
-	if err := db.First(&candi, relicId).Error; err != nil {
+	if err := db.First(&candi, candiId).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -186,6 +351,7 @@ func updateRelic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// semua method diperbolehkan masuk
@@ -197,14 +363,14 @@ func updateRelic(w http.ResponseWriter, r *http.Request) {
 	w.Write(result)
 }
 
-func deleteRelic(w http.ResponseWriter, r *http.Request) {
+func deleteCandi(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	relicId := vars["id"]
+	candiId := vars["id"]
 
-	log.Println(" ID ", relicId)
+	log.Println(" ID ", candiId)
 
 	var candi Candi
-	if err := db.First(&candi, relicId).Error; err != nil {
+	if err := db.First(&candi, candiId).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -219,6 +385,42 @@ func deleteRelic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// semua method diperbolehkan masuk
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+
+	// semua header diperbolehkan untuk disisipkan
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func getCandi(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	candiID := vars["id"]
+
+	log.Println(" isi id ", candiID)
+
+	var candi Candi
+
+	// db.Where("slug = ?", relicSlug).First(&candi)
+
+	if err := db.First(&candi, candiID).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	res := Result{Code: 200, Data: candi, Message: "Data Received"}
+	result, err := json.Marshal(res)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	// semua method diperbolehkan masuk
