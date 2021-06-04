@@ -29,12 +29,13 @@ type Candi struct {
 }
 
 type Trivia struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Slug     string `json:"slug"`
-	Candi_id int    `json:"candi_id"`
-	Trivia   string `json:"trivia"`
-	Img      string `json:"img"`
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Slug       string `json:"slug"`
+	Candi_id   int    `json:"candi_id"`
+	Candi_name string `json:"candi_name"`
+	Trivia     string `json:"trivia"`
+	Img        string `json:"img"`
 }
 
 type Article struct {
@@ -347,7 +348,7 @@ func updateCandi(w http.ResponseWriter, r *http.Request) {
 
 	payloads, _ := ioutil.ReadAll(r.Body)
 
-	var candiUpdates Trivia
+	var candiUpdates Candi
 	json.Unmarshal(payloads, &candiUpdates)
 	// db.Where("slug = ?", relicSlug).First(&candi)
 
